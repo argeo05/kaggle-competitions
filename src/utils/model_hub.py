@@ -13,7 +13,7 @@ from sklearn.model_selection import StratifiedKFold
 from tqdm.auto import tqdm
 
 
-class modelsHub:
+class Models_hub:
     def __init__(self, random_state=42):
         self.random_state = random_state
         self.results = []
@@ -25,6 +25,11 @@ class modelsHub:
         if hasattr(model, "decision_function"):
             return model.decision_function(X)
         return None
+
+    def _slice_rows(self, X, indices):
+        if hasattr(X, "iloc"):
+            return X.iloc[indices]
+        return X[indices]
 
     def add_loaded_model_to_leaderboard(self, model_name, loaded_model, X_valid, y_valid):
         pred_start = time.perf_counter()
@@ -90,8 +95,8 @@ class modelsHub:
         pred_times = []
 
         for train_idx, valid_idx in skf.split(X, y):
-            X_train_fold, X_valid_fold = X[train_idx], X[valid_idx]
-            y_train_fold, y_valid_fold = y[train_idx], y[valid_idx]
+            X_train_fold, X_valid_fold = self._slice_rows(X, train_idx), self._slice_rows(X, valid_idx)
+            y_train_fold, y_valid_fold = y.iloc[train_idx] if hasattr(y, "iloc") else y[train_idx], y.iloc[valid_idx] if hasattr(y, "iloc") else y[valid_idx]
 
             model = model_class(**params) if params else model_class()
 
@@ -118,7 +123,7 @@ class modelsHub:
             "precision": np.mean(metrics["precision"]),
             "recall": np.mean(metrics["recall"]),
             "f1": np.mean(metrics["f1"]),
-            "roc_auc": np.nanmean(metrics["roc_auc"]),
+            "roc_auc": np.mean(metrics["roc_auc"]),
             "params": params,
         }
         self.results.append(row)
