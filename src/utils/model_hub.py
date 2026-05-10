@@ -81,7 +81,7 @@ class Models_hub:
 
         return best_model, best_params
 
-    def fit_predict(self, model_class, X, y, model_name, params=None, n_splits=5, return_model=True):
+    def fit_predict(self, model_class, X, y, model_name, params=None, n_splits=5, return_model=True, fit_params=None):
         skf = StratifiedKFold(n_splits=n_splits, shuffle=True, random_state=self.random_state)
 
         metrics = {
@@ -101,7 +101,10 @@ class Models_hub:
             model = model_class(**params) if params else model_class()
 
             fit_start = time.perf_counter()
-            model.fit(X_train_fold, y_train_fold)
+            if fit_params:
+                model.fit(X_train_fold, y_train_fold, **fit_params)
+            else:
+                model.fit(X_train_fold, y_train_fold)
             fit_times.append(time.perf_counter() - fit_start)
 
             pred_start = time.perf_counter()
@@ -130,7 +133,10 @@ class Models_hub:
 
         if return_model:
             final_model = model_class(**params) if params else model_class()
-            final_model.fit(X, y)
+            if fit_params:
+                final_model.fit(X, y, **fit_params)
+            else:
+                final_model.fit(X, y)
             return row, final_model
 
         return row
