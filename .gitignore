@@ -2,7 +2,9 @@
 __pycache__/
 *.py[codz]
 *$py.class
-
+catboost_info/
+.python-version
+.DS_Store
 # C extensions
 *.so
 **/data
